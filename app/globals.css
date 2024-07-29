@@ -2,32 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+.felt-texture {
+  background-color: #35654d;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #2c5a43 25%,
+    transparent 25%,
+    transparent 75%,
+    #2c5a43 75%,
+    #2c5a43
+  ),
+  repeating-linear-gradient(
+    45deg,
+    #2c5a43 25%,
+    #35654d 25%,
+    #35654d 75%,
+    #2c5a43 75%,
+    #2c5a43
+  );
+  background-position: 0 0, 10px 10px;
+  background-size: 20px 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.card-back-texture {
+  background-color: #1e40af;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #1e3a8a 25%,
+    transparent 25%,
+    transparent 75%,
+    #1e3a8a 75%,
+    #1e3a8a
+  ),
+  repeating-linear-gradient(
+    45deg,
+    #1e3a8a 25%,
+    #1e40af 25%,
+    #1e40af 75%,
+    #1e3a8a 75%,
+    #1e3a8a
+  );
+  background-position: 0 0, 2px 2px;
+  background-size: 4px 4px;
 }
