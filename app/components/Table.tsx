@@ -66,7 +66,7 @@ export default function Table({ gameState, onHit, onStand, onDouble, onSplit, is
                 cards={hand} 
                 isActive={false}
               />
-                {gameState.gameStatus !== 'playing' && 
+                { !['playing', 'lastHandBusted'].includes(gameState.gameStatus) && 
                 <div className={`inline-block px-2 py-1 text- font-bold text-white text-center rounded-full ${
                   gameState.handResults[index] === 'win' ? 'bg-green-500' : 'bg-orange-500'
                 }`}>

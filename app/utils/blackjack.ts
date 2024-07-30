@@ -1,6 +1,6 @@
 export type Card = {
   value: string;
-  suit: '♠' | '♥' | '♦' | '♣';
+  suit: '♠' | '♥' | '♦' | '♣';  
 };
 
 export type HandResult = 'win' | 'lose' | 'bust' | 'push' | 'playing';
@@ -14,6 +14,27 @@ export type GameState = {
   gameStatus: 'playing' | 'playerBlackjack' | 'playerBust' | 'dealerBust' | 'playerWin' | 'dealerWin' | 'push' | 'lastHandBusted';
   dealerRevealed: boolean;
   handResults: HandResult[];
+};
+
+declare global {
+  interface Array<T> {
+    pop(): T | undefined;
+  }
+}
+
+Array.prototype.pop = function <T>(): T | undefined {
+  // Call the original pop method
+  const poppedItem = Array.prototype.splice.call(this, -1, 1)[0];
+
+  // If poppedItem is undefined, create and assign a new shuffled deck
+  if (poppedItem === undefined) {
+    console.log('Deck is empty, creating a new shuffled deck');
+    const newDeck = createShuffledDeck();
+    this.push(...newDeck);
+    return this.pop();
+  }
+
+  return poppedItem;
 };
 
 export function initializeSimulatorHand(): GameState {
@@ -102,7 +123,7 @@ export function initializeGame(): GameState {
 
 function createShuffledDeck(): Card[] {
   const suits: ('♠' | '♥' | '♦' | '♣')[] = ['♠', '♥', '♦', '♣'];
-  const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+  const values = ['2'];
   const deck: Card[] = [];
 
   // Create 6 decks
@@ -139,7 +160,7 @@ export function hit(gameState: GameState): GameState {
       }
     } else if (newState.playerHands.length == 1){
       newState.gameStatus = 'playerBust';
-    } else if(newState.playerHands.length > 1) {
+    } else if(newState.currentPlayerHand === newState.playerHands.length - 1) {
       newState.gameStatus = 'lastHandBusted';
     }
   }
@@ -155,18 +176,6 @@ export function stand(gameState: GameState): GameState {
     if (nextHand.length === 1) {
       nextHand.push(newState.deck.pop()!);
     }
-    /*
-    if (newState.currentPlayerHand < newState.playerHands.length - 1) {
-      newState.currentPlayerHand++;
-      const nextHand = newState.playerHands[newState.currentPlayerHand];
-      if (nextHand.length === 1) {
-        nextHand.push(newState.deck.pop()!);
-      }
-    } else {
-      newState.gameStatus = 'playerBust';
-    }
-    
-    */
 
     return newState;
   }
@@ -190,7 +199,7 @@ export function double(gameState: GameState): GameState {
       }
     } else if (newState.playerHands.length == 1){
       newState.gameStatus = 'playerBust';
-    } else if(newState.playerHands.length > 1) {
+    } else if(newState.currentPlayerHand === newState.playerHands.length - 1) {
       newState.gameStatus = 'lastHandBusted';
     }
   } else {
@@ -229,7 +238,7 @@ export function split(gameState: GameState): GameState {
 
 export function canSplit(gameState: GameState): boolean {
   const currentHand = gameState.playerHands[gameState.currentPlayerHand];
-  return currentHand.length === 2 && currentHand[0].value === currentHand[1].value;
+  return currentHand.length === 2 && currentHand[0].value === currentHand[1].value && gameState.playerHands.length < 4;
 }
 
 export function canDouble(gameState: GameState): boolean {

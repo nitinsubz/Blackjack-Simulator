@@ -43,9 +43,14 @@ export default function Home() {
 
   const handleDouble = () => {
     if (gameState && gameState.gameStatus === 'playing' && canDouble(gameState)) {
+      const currentPlayerIndex = gameState.currentPlayerHand;
       const newState = double(gameState);
       setGameState(newState);
-      if (newState.currentPlayerHand === newState.playerHands.length - 1) {
+      console.log(newState.currentPlayerHand);
+      console.log(newState.playerHands.length);
+      if (newState.playerHands.length !== 1 && currentPlayerIndex == newState.playerHands.length - 1) {
+        setIsDealerTurn(true);
+      } else if(newState.playerHands.length == 1 && newState.gameStatus !== 'playerBust') {
         setIsDealerTurn(true);
       }
     }
