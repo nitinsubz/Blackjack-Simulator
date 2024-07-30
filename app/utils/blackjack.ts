@@ -123,7 +123,7 @@ export function initializeGame(): GameState {
 
 function createShuffledDeck(): Card[] {
   const suits: ('♠' | '♥' | '♦' | '♣')[] = ['♠', '♥', '♦', '♣'];
-  const values = ['2'];
+  const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
   const deck: Card[] = [];
 
   // Create 6 decks
