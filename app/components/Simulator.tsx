@@ -114,7 +114,7 @@ export default function Simulator() {
       <div className="mt-16">
         <DealerHand cards={gameState.dealerHand} hideFirst={true} />
       </div>
-      <div className="h-40" /> {/* Spacer */}
+      <div className="h-0" /> {/* Spacer */}
       <PlayerHand cards={gameState.playerHands[0]} isActive={false} />
       
       <div className="mt-12 grid grid-cols-2 gap-4 max-w-md mx-auto">

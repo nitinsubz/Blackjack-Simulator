@@ -4,7 +4,7 @@ import DealerHand from './DealerHand';
 import PlayerHand from './PlayerHand';
 import ActionButtons from './ActionButtons';
 import ChipStack from './ChipStack';
-import { GameState, calculateHandValue, canSplit, canDouble } from '../utils/blackjack';
+import { GameState, calculateHandValue, canSplit, canDouble, revealDealerCard } from '../utils/blackjack';
 
 type TableProps = {
   gameState: GameState;
@@ -13,9 +13,10 @@ type TableProps = {
   onDouble: () => void;
   onSplit: () => void;
   isDealerTurn: boolean;
+  resetGame: () => void;
 };
 
-export default function Table({ gameState, onHit, onStand, onDouble, onSplit, isDealerTurn }: TableProps) {
+export default function Table({ gameState, onHit, onStand, onDouble, onSplit, isDealerTurn, resetGame }: TableProps) {
   const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
@@ -44,24 +45,38 @@ export default function Table({ gameState, onHit, onStand, onDouble, onSplit, is
         <div className="w-20 h-28 bg-white rounded-lg border-2 border-blue-900"></div>
       </div>
       <DealerHand cards={gameState.dealerHand} hideFirst={!gameState.dealerRevealed} />
-      <div className="h-40" /> {/* Spacer */}
-      <div className="flex flex-wrap justify-center">
-        {gameState.playerHands.map((hand, index) => (
-          <div 
-            key={index} 
-            className={`m-2 ${index === gameState.currentPlayerHand ? 'border-2 border-yellow-400 rounded-lg p-2' : ''}`}
-          >
-            <PlayerHand 
-              cards={hand} 
-              isActive={false}
-            />
-            {index === gameState.currentPlayerHand && (
-              <div className="mt-2 text-center text-white font-bold">
-                Current Hand
-              </div>
-            )}
-          </div>
-        ))}
+      <div className="h-4" /> {/* Spacer */}
+      <div className="flex flex-wrap justify-center mt-8">
+        {gameState.playerHands.map((hand, index) => {
+          let borderColor = 'border-transparent';
+          if (gameState.handResults[index] === 'win') {
+            borderColor = 'border-green-400';
+          } else if (gameState.handResults[index] === 'lose' || gameState.handResults[index] === 'bust') {
+            borderColor = 'border-red-500';
+          }
+
+          return (
+            <div 
+              key={index} 
+              className={`flex flex-col items-center m-2 border-4 rounded-lg p-2 ${borderColor} ${
+                index === gameState.currentPlayerHand && gameState.gameStatus === 'playing'? 'ring-2 ring-yellow-400' : ''
+              }`}
+            >
+              <PlayerHand 
+                cards={hand} 
+                isActive={false}
+              />
+                {gameState.gameStatus !== 'playing' && 
+                <div className={`inline-block px-2 py-1 text- font-bold text-white text-center rounded-full ${
+                  gameState.handResults[index] === 'win' ? 'bg-green-500' : 'bg-orange-500'
+                }`}>
+                  {gameState.handResults[index] === 'win' ? 'You Win' : gameState.handResults[index] === 'lose' ? 'You Lose!' : gameState.handResults[index] === 'push' ? 'Push' : 'You Busted!'}
+                </div>
+              }
+            
+            </div>
+          );
+        })}
       </div>
       <div className="absolute bottom-4 left-4">
         <ChipStack amount={gameState.bet} />
@@ -75,12 +90,19 @@ export default function Table({ gameState, onHit, onStand, onDouble, onSplit, is
         canSplit={canSplit(gameState)}
         canDouble={canDouble(gameState)}
       />
+     <button 
+        className="absolute bottom-4 right-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-md transition duration-300 ease-in-out"
+        onClick={resetGame}
+      >
+        New Game
+      </button>
+
       {isDealerTurn && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="text-white text-2xl font-bold">Dealer&apos;s Turn</div>
+          <div className="text-white text-2xl font-bold -mt-24">Dealer&apos;s Turn</div>
         </div>
       )}
-      {showResult && (
+      {/* {showResult && (
         <animated.div 
           style={{
             ...resultSpring,
@@ -104,7 +126,7 @@ export default function Table({ gameState, onHit, onStand, onDouble, onSplit, is
             ))}
           </div>
         </animated.div>
-      )}
+      )} */}
     </div>
   );
 }

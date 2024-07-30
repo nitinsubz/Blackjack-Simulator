@@ -45,7 +45,7 @@ export default function Home() {
     if (gameState && gameState.gameStatus === 'playing' && canDouble(gameState)) {
       const newState = double(gameState);
       setGameState(newState);
-      if (newState.gameStatus === 'playing') {
+      if (newState.currentPlayerHand === newState.playerHands.length - 1) {
         setIsDealerTurn(true);
       }
     }
@@ -63,6 +63,7 @@ export default function Home() {
         if (!gameState.dealerRevealed) {
           await new Promise(resolve => setTimeout(resolve, 1000));
           setGameState(revealDealerCard(gameState));
+          console.log("reevelaing dae");
           return;
         }
 
@@ -117,13 +118,8 @@ export default function Home() {
               onDouble={handleDouble}
               onSplit={handleSplit}
               isDealerTurn={isDealerTurn}
+              resetGame={resetGame}
             />
-            <button 
-              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-              onClick={resetGame}
-            >
-              New Game
-            </button>
           </>
         )}
       </main>

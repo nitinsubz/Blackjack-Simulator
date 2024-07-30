@@ -3,6 +3,8 @@ export type Card = {
   suit: '♠' | '♥' | '♦' | '♣';
 };
 
+export type HandResult = 'win' | 'lose' | 'bust' | 'push' | 'playing';
+
 export type GameState = {
   playerHands: Card[][];
   dealerHand: Card[];
@@ -11,6 +13,7 @@ export type GameState = {
   bet: number;
   gameStatus: 'playing' | 'playerBlackjack' | 'playerBust' | 'dealerBust' | 'playerWin' | 'dealerWin' | 'push' | 'lastHandBusted';
   dealerRevealed: boolean;
+  handResults: HandResult[];
 };
 
 export function initializeSimulatorHand(): GameState {
@@ -23,6 +26,7 @@ export function initializeSimulatorHand(): GameState {
       bet: 10,
       gameStatus: 'playing',
       dealerRevealed: true, // In simulator mode, dealer's card is always revealed
+      handResults: ['playing'],
     };
   }
   
@@ -92,6 +96,7 @@ export function initializeGame(): GameState {
     bet: 10,
     gameStatus: 'playing',
     dealerRevealed: false,
+    handResults: ['playing'],
   };
 }
 
@@ -100,12 +105,16 @@ function createShuffledDeck(): Card[] {
   const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
   const deck: Card[] = [];
 
-  for (const suit of suits) {
-    for (const value of values) {
-      deck.push({ value, suit });
+  // Create 6 decks
+  for (let deckNum = 0; deckNum < 6; deckNum++) {
+    for (const suit of suits) {
+      for (const value of values) {
+        deck.push({ value, suit });
+      }
     }
   }
 
+  // Shuffle the combined deck
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -121,6 +130,7 @@ export function hit(gameState: GameState): GameState {
   
   const playerValue = calculateHandValue(currentHand);
   if (playerValue > 21) {
+    newState.handResults[newState.currentPlayerHand] = 'bust';
     if (newState.currentPlayerHand < newState.playerHands.length - 1) {
       newState.currentPlayerHand++;
       const nextHand = newState.playerHands[newState.currentPlayerHand];
@@ -167,7 +177,7 @@ export function stand(gameState: GameState): GameState {
 export function double(gameState: GameState): GameState {
   const newState = { ...gameState };
   const currentHand = newState.playerHands[newState.currentPlayerHand];
-  
+
   newState.bet *= 2;
   currentHand.push(newState.deck.pop()!);
   
@@ -178,14 +188,22 @@ export function double(gameState: GameState): GameState {
       if (nextHand.length === 1) {
         nextHand.push(newState.deck.pop()!);
       }
-      return newState;
-    } else {
+    } else if (newState.playerHands.length == 1){
       newState.gameStatus = 'playerBust';
-      return newState;
+    } else if(newState.playerHands.length > 1) {
+      newState.gameStatus = 'lastHandBusted';
+    }
+  } else {
+    if (newState.currentPlayerHand < newState.playerHands.length - 1) {
+      newState.currentPlayerHand++;
+      const nextHand = newState.playerHands[newState.currentPlayerHand];
+      if (nextHand.length === 1) {
+        nextHand.push(newState.deck.pop()!);
+      }
     }
   }
 
-  return stand(newState);
+  return newState;
 }
 
 function areAllHandsPlayed(gameState: GameState): boolean {
@@ -193,7 +211,6 @@ function areAllHandsPlayed(gameState: GameState): boolean {
 }
 
 export function split(gameState: GameState): GameState {
-  console.log("splitting");
   const newState = { ...gameState };
   const currentHand = newState.playerHands[newState.currentPlayerHand];
   
@@ -205,7 +222,8 @@ export function split(gameState: GameState): GameState {
   currentHand.push(newState.deck.pop()!);
   
   newState.playerHands.splice(newState.currentPlayerHand + 1, 0, newHand);
-  
+  newState.handResults.splice(newState.currentPlayerHand + 1, 0, 'playing');
+
   return newState;
 }
 
@@ -251,8 +269,18 @@ function finalizeDealerHand(gameState: GameState): GameState {
 
   if (dealerValue > 21) {
     newState.gameStatus = 'dealerBust';
+    newState.handResults = newState.handResults.map(result => 
+      result === 'playing' ? 'win' : result
+    );
   } else {
     const playerHandValues = newState.playerHands.map(calculateHandValue);
+    newState.handResults = playerHandValues.map(value => {
+      if (value > 21) return 'lose';
+      if (value > dealerValue) return 'win';
+      if (value < dealerValue) return 'lose';
+      return 'push';
+    });
+
     const playerBestHand = Math.max(...playerHandValues.filter(v => v <= 21));
     
     if (playerBestHand > dealerValue) {
