@@ -77,7 +77,7 @@ export default function Table({ gameState, onHit, onStand, onDouble, onSplit, is
       />
       {isDealerTurn && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="text-white text-2xl font-bold">Dealer's Turn</div>
+          <div className="text-white text-2xl font-bold">Dealer&apos;s Turn</div>
         </div>
       )}
       {showResult && (
